@@ -1,1 +1,299 @@
 
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Vokabeltrainer · Lebenslauf (A1) – mit Übersetzungen</title>
+<style>
+  :root{
+    --bg:#f6f7fb;--card:#ffffff;--ink:#0f172a;--muted:#6b7280;--line:#e5e7eb;
+    --accent:#2563eb;--good:#16a34a;--bad:#dc2626;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Roboto,Arial}
+  .wrap{max-width:980px;margin:auto;padding:20px}
+  header{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+  h1{margin:0;font-size:22px}
+  .muted{color:var(--muted)}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap}
+  .tab{border:1px solid var(--line);background:#fff;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:700}
+  .tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .card{
+    margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);padding:16px
+  }
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .grow{flex:1}
+  .controls{display:flex;gap:8px;flex-wrap:wrap}
+  button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:700}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  input[type="text"]{width:100%;padding:10px 12px;border:2px solid var(--line);border-radius:10px;font-size:16px}
+  .big{font-size:28px;font-weight:800}
+  .hint{font-size:14px;color:var(--muted)}
+  .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:8px}
+  .item{border:1px dashed var(--line);background:#fff;border-radius:12px;padding:10px}
+  .item b{display:block;margin-bottom:4px}
+  .rtl{direction:rtl}
+  .langbox{display:flex;flex-wrap:wrap;gap:8px}
+  .langbox label{display:flex;gap:6px;align-items:center;border:1px solid var(--line);padding:6px 10px;border-radius:999px;background:#fff}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:760px){ .split{grid-template-columns:1fr} }
+  .stat{font-weight:800}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Vokabeltrainer · Lebenslauf (A1)</h1>
+      <div class="muted">Lernen · Testen · Phrasen — optionaler Modus <b>Vokale fehlen</b> + Übersetzungen</div>
+      <div class="langbox" id="langBox" aria-label="Sprachen ein-/ausblenden">
+        <label><input type="checkbox" data-lang="tr" checked> Türkisch</label>
+        <label><input type="checkbox" data-lang="ar" checked> العربية</label>
+        <label><input type="checkbox" data-lang="ru" checked> Русский</label>
+        <label><input type="checkbox" data-lang="uk" checked> Українська</label>
+        <label><input type="checkbox" data-lang="fa" checked> فارسی</label>
+        <label><input type="checkbox" data-lang="fr" checked> Français</label>
+        <label><input type="checkbox" data-lang="en" checked> English</label>
+      </div>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="learn">Lernen</button>
+      <button class="tab" data-tab="test">Testen</button>
+      <button class="tab" data-tab="phrases">Phrasen</button>
+    </div>
+  </header>
+
+  <!-- Lernen -->
+  <div class="card" id="panel-learn" role="tabpanel">
+    <div class="row">
+      <div class="grow">
+        <div id="learnWord" class="big">—</div>
+        <div id="learnInfo" class="hint" style="margin-top:2px">—</div>
+        <div id="learnTrans" style="margin-top:8px"></div>
+      </div>
+      <div class="controls">
+        <button id="prevL">◀ Zurück</button>
+        <button id="nextL">Weiter ▶</button>
+      </div>
+    </div>
+    <div class="list" id="allList"></div>
+  </div>
+
+  <!-- Testen -->
+  <div class="card" id="panel-test" role="tabpanel" hidden>
+    <div class="split">
+      <div>
+        <div class="row">
+          <div class="grow">
+            <div class="hint">Begriff</div>
+            <div id="testQuestion" class="big">—</div>
+          </div>
+          <div class="controls">
+            <label class="hint"><input type="checkbox" id="missingVowels"> Vokale fehlen</label>
+            <button id="tip">Tipp</button>
+          </div>
+        </div>
+        <div id="testTrans" class="hint" style="margin-top:6px"></div>
+        <div style="margin-top:10px">
+          <input id="answer" type="text" placeholder="Antwort hier eingeben…" autocomplete="off" />
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div class="controls">
+            <button id="check" class="primary">Prüfen</button>
+            <button id="skip">Überspringen</button>
+            <button id="nextT">Nächste ▶</button>
+          </div>
+          <div class="grow"></div>
+          <div class="hint">Fortschritt: <span class="stat" id="okCnt">0</span> richtig · <span class="stat" id="badCnt">0</span> falsch · Streak: <span class="stat" id="streak">0</span></div>
+        </div>
+        <div id="feedback" class="hint" style="margin-top:8px"></div>
+      </div>
+      <div>
+        <div class="row">
+          <div class="grow hint">Einstellungen</div>
+          <div class="controls">
+            <button id="resetProgress">Fortschritt löschen</button>
+          </div>
+        </div>
+        <div class="item" style="margin-top:8px">
+          <div class="hint">Hinweis</div>
+          <div>Umlaute <b>ä/ö/ü</b> kannst du als <b>ae/oe/ue</b> schreiben.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phrasen -->
+  <div class="card" id="panel-phrases" role="tabpanel" hidden>
+    <div class="hint">Lies laut und ergänze deinen Namen/Datum usw.</div>
+    <ul>
+      <li>Ich heiße <i>Vorname Nachname</i>.</li>
+      <li>Meine Adresse ist <i>Straße Hausnummer, PLZ Ort</i>.</li>
+      <li>Mein Geburtsdatum ist <i>TT.MM.JJJJ</i>.</li>
+      <li>Ich habe ein Praktikum im <i>Kindergarten</i> gemacht.</li>
+      <li>Ich spreche <i>Deutsch A1</i> und <i>Englisch A2</i>.</li>
+      <li>Meine Hobbys sind <i>Fußball</i> und <i>Musik</i>.</li>
+      <li>Ort, Datum, Unterschrift: <i>Berlin, 09.09.2025, [Unterschrift]</i>.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+/* ======================
+   Daten · Lebenslauf A1
+====================== */
+const WORDS = [
+  {key:"lebenslauf", de:"Lebenslauf", info:"Dokument für Bewerbung", tr:"özgeçmiş", ar:"السيرة الذاتية", ru:"резюме", uk:"резюме", fa:"رزومه", fr:"CV (curriculum vitae)", en:"CV / resume"},
+  {key:"persoenliche_daten", de:"Persönliche Daten", info:"Name, Adresse, Geburtsdatum …", tr:"kişisel bilgiler", ar:"البيانات الشخصية", ru:"личные данные", uk:"особисті дані", fa:"اطلاعات شخصی", fr:"données personnelles", en:"personal data"},
+  {key:"kontakt", de:"Kontakt", info:"Telefon, E-Mail", tr:"iletişim", ar:"معلومات الاتصال", ru:"контакты", uk:"контакти", fa:"اطلاعات تماس", fr:"contact", en:"contact"},
+  {key:"name", de:"Name", info:"Vorname und Nachname", tr:"ad soyad", ar:"الاسم", ru:"имя и фамилия", uk:"ім’я та прізвище", fa:"نام و نام خانوادگی", fr:"nom", en:"name"},
+  {key:"adresse", de:"Adresse", info:"Straße, Hausnummer, PLZ, Ort", tr:"adres", ar:"العنوان", ru:"адрес", uk:"адреса", fa:"نشانی", fr:"adresse", en:"address"},
+  {key:"telefon", de:"Telefon", info:"z. B. 0176 123456789", tr:"telefon", ar:"رقم الهاتف", ru:"телефон", uk:"телефон", fa:"شماره تلفن", fr:"téléphone", en:"phone number"},
+  {key:"email", de:"E-Mail", info:"z. B. name@mail.de", tr:"e-posta", ar:"البريد الإلكتروني", ru:"электронная почта", uk:"електронна пошта", fa:"ایمیل", fr:"e-mail", en:"email"},
+  {key:"geburtsdatum", de:"Geburtsdatum", info:"z. B. 01.01.2007", tr:"doğum tarihi", ar:"تاريخ الميلاد", ru:"дата рождения", uk:"дата народження", fa:"تاریخ تولد", fr:"date de naissance", en:"date of birth"},
+  {key:"geburtsort", de:"Geburtsort", info:"Stadt, Land", tr:"doğum yeri", ar:"مكان الميلاد", ru:"место рождения", uk:"місце народження", fa:"محل تولد", fr:"lieu de naissance", en:"place of birth"},
+  {key:"sprachen", de:"Sprachen", info:"Deutsch A1, Englisch A2 …", tr:"diller", ar:"اللغات", ru:"языки", uk:"мови", fa:"زبان‌ها", fr:"langues", en:"languages"},
+  {key:"schule", de:"Schule", info:"z. B. Gesamtschule Musterstadt", tr:"okul", ar:"المدرسة", ru:"школа", uk:"школа", fa:"مدرسه", fr:"école", en:"school"},
+  {key:"abschluss", de:"Abschluss", info:"z. B. 2026 (voraussichtlich)", tr:"diploma / mezuniyet", ar:"الشهادة", ru:"диплом / аттестат", uk:"диплом", fa:"مدرک تحصیلی", fr:"diplôme", en:"degree / graduation"},
+  {key:"ausbildung", de:"Ausbildung", info:"Berufsschule, schulische Ausbildung", tr:"mesleki eğitim", ar:"التدريب المهني", ru:"профобразование", uk:"профосвіта", fa:"آموزش حرفه‌ای", fr:"formation", en:"training / education"},
+  {key:"praktikum", de:"Praktikum", info:"z. B. Kindergarten (06/2024–07/2024)", tr:"staj", ar:"تدريب عملي", ru:"стажировка", uk:"стажування", fa:"کارآموزی", fr:"stage", en:"internship"},
+  {key:"berufserfahrung", de:"Berufserfahrung", info:"z. B. Minijob im Supermarkt", tr:"iş tecrübesi", ar:"الخبرة العملية", ru:"опыт работы", uk:"досвід роботи", fa:"سابقه کاری", fr:"expérience professionnelle", en:"work experience"},
+  {key:"taetigkeiten", de:"Tätigkeiten", info:"Aufgaben im Job/Praktikum", tr:"görevler", ar:"المهام", ru:"обязанности", uk:"обов’язки", fa:"وظایف", fr:"tâches", en:"tasks / duties"},
+  {key:"kenntnisse", de:"Kenntnisse", info:"EDV, Führerschein …", tr:"beceriler", ar:"المهارات", ru:"навыки", uk:"навички", fa:"مهارت‌ها", fr:"compétences", en:"skills"},
+  {key:"edv", de:"EDV", info:"Computer: Word, PowerPoint …", tr:"bilgisayar", ar:"مهارات الحاسوب", ru:"компьютерные навыки", uk:"комп’ютерні навички", fa:"مهارت‌های کامپیوتری", fr:"informatique (compétences)", en:"IT / computer skills"},
+  {key:"faehigkeiten", de:"Fähigkeiten", info:"teamfähig, pünktlich …", tr:"yetenekler", ar:"القدرات", ru:"способности", uk:"здібності", fa:"توانایی‌ها", fr:"aptitudes", en:"abilities"},
+  {key:"hobbys", de:"Hobbys", info:"Fußball, Zeichnen, Musik …", tr:"hobiler", ar:"الهوايات", ru:"хобби", uk:"хобі", fa:"سرگرمی‌ها", fr:"loisirs", en:"hobbies"},
+  {key:"interessen", de:"Interessen", info:"Technik, Soziales …", tr:"ilgi alanları", ar:"الاهتمامات", ru:"интересы", uk:"інтереси", fa:"علایق", fr:"centres d’intérêt", en:"interests"},
+  {key:"ort", de:"Ort", info:"z. B. Berlin", tr:"şehir", ar:"المدينة", ru:"город", uk:"місто", fa:"شهر", fr:"ville", en:"city"},
+  {key:"datum", de:"Datum", info:"z. B. 09.09.2025", tr:"tarih", ar:"التاريخ", ru:"дата", uk:"дата", fa:"تاریخ", fr:"date", en:"date"},
+  {key:"unterschrift", de:"Unterschrift", info:"dein Name in Schreibschrift", tr:"imza", ar:"التوقيع", ru:"подпись", uk:"підпис", fa:"امضا", fr:"signature", en:"signature"}
+];
+
+// LocalStorage-Keys
+const LS = { ok:"cvvoc_ok", bad:"cvvoc_bad", streak:"cvvoc_streak", idxLearn:"cvvoc_idxLearn", idxTest:"cvvoc_idxTest", langs:"cvvoc_langs" };
+
+// Helpers
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+function save(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
+function load(k,d){ try{const v=JSON.parse(localStorage.getItem(k)); return v??d;}catch(e){return d;} }
+function toMissingVowels(word){
+  const map = {'a':'·','e':'·','i':'·','o':'·','u':'·','ä':'·','ö':'·','ü':'·','A':'·','E':'·','I':'·','O':'·','U':'·','Ä':'·','Ö':'·','Ü':'·'};
+  return word.split('').map(c => map[c] ? map[c] : c).join('');
+}
+function normalize(s){
+  return s.trim().replace(/ae/gi,'ä').replace(/oe/gi,'ö').replace(/ue/gi,'ü').replace(/\s+/g,' ').toLowerCase();
+}
+
+// Sprachauswahl
+const ALL_LANGS = ["tr","ar","ru","uk","fa","fr","en"];
+let ACTIVE_LANGS = load(LS.langs, ALL_LANGS.slice());
+$("#langBox").addEventListener("change", ()=>{
+  ACTIVE_LANGS = $$("#langBox input:checked").map(x=>x.dataset.lang);
+  save(LS.langs, ACTIVE_LANGS);
+  renderLearn();
+  renderAllList();
+  renderTest();
+});
+// Restore checkboxes
+$$("#langBox input").forEach(cb=>{ cb.checked = ACTIVE_LANGS.includes(cb.dataset.lang); });
+
+// Tabs
+const panels = {learn:$("#panel-learn"), test:$("#panel-test"), phrases:$("#panel-phrases")};
+$$(".tab").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    $$(".tab").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    const t = btn.dataset.tab;
+    Object.entries(panels).forEach(([k,el])=>{ el.hidden = (k!==t); });
+    if(t==="test") setTimeout(()=>$("#answer").focus(), 50);
+  });
+});
+
+// Lernen
+let idxLearn = load(LS.idxLearn, 0) % WORDS.length;
+function translationsHTML(w){
+  const langOrder = ACTIVE_LANGS;
+  if(!langOrder.length) return '<div class="hint">Übersetzungen sind ausgeblendet.</div>';
+  const parts = langOrder.map(code=>{
+    const val = w[code] || "—";
+    const label = {tr:"TR", ar:"AR", ru:"RU", uk:"UK", fa:"FA", fr:"FR", en:"EN"}[code] || code.toUpperCase();
+    const rtl = (code==="ar"||code==="fa") ? ' class="rtl"' : '';
+    return `<div${rtl}><b>${label}:</b> ${val}</div>`;
+  });
+  return parts.join("");
+}
+function renderLearn(){
+  const w = WORDS[idxLearn];
+  $("#learnWord").textContent = w.de;
+  $("#learnInfo").textContent = w.info || "";
+  $("#learnTrans").innerHTML = translationsHTML(w);
+}
+function renderAllList(){
+  const cont = $("#allList");
+  cont.innerHTML = "";
+  WORDS.forEach(w=>{
+    const div = document.createElement("div");
+    div.className="item";
+    div.innerHTML = `<b>${w.de}</b>
+      <div class="hint">${w.info||""}</div>
+      <div style="margin-top:6px">${translationsHTML(w)}</div>`;
+    cont.appendChild(div);
+  });
+}
+$("#prevL").addEventListener("click",()=>{ idxLearn=(idxLearn-1+WORDS.length)%WORDS.length; save(LS.idxLearn,idxLearn); renderLearn(); });
+$("#nextL").addEventListener("click",()=>{ idxLearn=(idxLearn+1)%WORDS.length; save(LS.idxLearn,idxLearn); renderLearn(); });
+
+// Testen
+let idxTest = load(LS.idxTest, 0) % WORDS.length;
+let okCnt = load(LS.ok, 0);
+let badCnt = load(LS.bad, 0);
+let streak = load(LS.streak, 0);
+const q = () => WORDS[idxTest];
+
+function renderTest(){
+  const w = q();
+  const missing = $("#missingVowels").checked;
+  $("#testQuestion").textContent = missing ? toMissingVowels(w.de) : (w.info || "Schreibe das Wort");
+  $("#okCnt").textContent = okCnt; $("#badCnt").textContent = badCnt; $("#streak").textContent = streak;
+  $("#feedback").textContent = "";
+  $("#answer").value = "";
+  // Übersetzungen (als Hilfe) anzeigen
+  $("#testTrans").innerHTML = translationsHTML(w);
+  setTimeout(()=>$("#answer").focus(), 50);
+}
+$("#missingVowels").addEventListener("change", renderTest);
+
+$("#check").addEventListener("click",()=>{
+  const user = normalize($("#answer").value);
+  const correct = normalize(q().de);
+  if(!user){ $("#feedback").textContent="Bitte etwas eingeben 😊"; return; }
+  if(user === correct){
+    okCnt++; streak++; save(LS.ok,okCnt); save(LS.streak,streak);
+    $("#feedback").innerHTML = `✅ Richtig: <b>${q().de}</b>`;
+  }else{
+    badCnt++; streak=0; save(LS.bad,badCnt); save(LS.streak,streak);
+    $("#feedback").innerHTML = `❌ Leider falsch. Richtig ist: <b>${q().de}</b>`;
+  }
+});
+$("#nextT").addEventListener("click",()=>{ idxTest=(idxTest+1)%WORDS.length; save(LS.idxTest,idxTest); renderTest(); });
+$("#skip").addEventListener("click",()=>{ $("#nextT").click(); });
+$("#tip").addEventListener("click",()=>{
+  const w = q().de;
+  const tip = w.length>2 ? (w[0]+"…"+w[w.length-1]) : w;
+  $("#feedback").textContent = "Tipp: " + tip;
+});
+$("#resetProgress").addEventListener("click",()=>{
+  okCnt=0; badCnt=0; streak=0; save(LS.ok,okCnt); save(LS.bad,badCnt); save(LS.streak,streak);
+  $("#feedback").textContent="Fortschritt zurückgesetzt.";
+  renderTest();
+});
+
+// Init
+function init(){ renderLearn(); renderAllList(); renderTest(); }
+if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", init); } else { init(); }
+</script>
+</body>
+</html>
